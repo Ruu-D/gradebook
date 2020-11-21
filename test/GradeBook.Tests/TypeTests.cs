@@ -5,7 +5,6 @@ namespace GradeBook.Tests
 {
     public class TypeTests
     {
-
         [Fact]
         public void ValueTypeAlsoPassByValue()
         // Looking at the 'public class TypeTests' = Whenever working with something defined as a 'class', we are working with a reference type.
@@ -76,6 +75,28 @@ namespace GradeBook.Tests
         private void SetName(Book book, string name)
         {
             book.Name = name;
+        }
+
+        [Fact]
+        public void StringsBehaveLikeValueTypes()
+        {
+            string name = "Daan";
+            var upper = MakeUppercase(name);
+
+            Assert.Equal("Daan", name);
+            Assert.Equal("DAAN", upper);
+        }
+
+        private string MakeUppercase(string parameter)
+        {
+            // parameter.ToUpper();   //Returns a !copy of this string converted to uppercase.
+                // The line above will NOT change the string inside the public void "StringsBehaveLikeValueTypes".
+
+            // String objects are immutable: they cannot be changed after they have been created. 
+            // All of the String methods and C# operators that appear to modify a string actually return the results in a new string object.
+
+            return parameter.ToUpper();
+
         }
 
         [Fact]
