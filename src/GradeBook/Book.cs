@@ -3,15 +3,22 @@ using System.Collections.Generic;
 
 namespace GradeBook
 {
+    public delegate void GradeAddedDelegate(object sender, EventArgs args);
+
     public class Book
     {
-        public Book(string name)
+        public Book(string name)  // = this is a 'constructor'
         {
             grades = new List<double>();
             Name = name;
         }
 
-        public void AddLetterGrade(char letter)
+        //public string AddGrade(char letter, int x)
+        //{
+        //    return "This is just to show that the 'AddGrade' name can exist multiple times, BUT with additional parameters!";
+        //}
+
+        public void AddGrade(char letter)
         {
             ////////// Most basic form of the 'switch' statement.
             // Could also be done with nested 'if' + 'else if' statements.
@@ -32,28 +39,28 @@ namespace GradeBook
                     AddGrade(0);
                     break;
             }
-
         }
 
         public void AddGrade(double grade)
         {
             if (grade <= 100 && grade >= 0)
             {
-                // if (grade >= 0)
-                // Nesting of an 'if' statement in another 'if' statement.
-                // Only if the first 'if' statement is not combined with '&&'.
-                // {
                 grades.Add(grade);
-                // }
+                if(GradeAdded != null)
+                {
+                    GradeAdded(this, new EventArgs());
+                }
+
             }
             else
             {
                 // Console.WriteLine("Invalid value");
                 throw new ArgumentException($"Invalid {nameof(grade)+ " entered dude..."}");
             }
-            
-
         }
+
+        public event GradeAddedDelegate GradeAdded; //Gives some additional restrictions to the 'GradeAdded' delegate
+
         public Statistics GetStatistics()
         {
             var result = new Statistics();
@@ -162,10 +169,10 @@ namespace GradeBook
                     break;  // Ability to break out of the loop and skip the 3 lines of code below. Jump to line "result.Average /= grades.Count;"
 
                     //////// Method 2
-                    // continue; //When value '42.1' is detected, continue the loop.
+                    continue; //When value '42.1' is detected, continue the loop.
 
                     //////// Method 3
-                    // goto to done;  // No one really uses this principle these days...
+                    goto to done;  // No one really uses this principle these days...
                 }
                 result.Low = Math.Min(grades[index], result.Low);
                 result.High = Math.Max(grades[index], result.High);
@@ -176,10 +183,45 @@ namespace GradeBook
             return result;
             #endregion
 */
-
         }
 
         private List<double> grades;
-        public string Name;
+
+        ////////////////////////////////
+        //// Long hand syntax for defining a property :
+        //public string Name
+        //{
+        //    get
+        //    {
+        //        return name;    // Code being executed when someone wants to READ the Name property.
+        //    }
+        //    set
+        //    {
+        //        if (!String.IsNullOrEmpty(value))  // Perform a check if value is empty. ! means that 'if it's NOT' empty, set the field Name as the incoming input value.
+        //        {
+        //            name = value;
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine($"The input you gave me is empty bro");
+        //        }
+        //    }
+        //}
+
+        //private string name;  // = backing field that sits behind the property.
+
+
+
+
+        //////////////////////////////
+        // short way for defining a property :
+        public string Name
+        {
+            get;
+            set;  // makes sure that once a 'Name' is given to the book, it can no longer be changed afterwards.
+        }
+
+        // readonly string category = "Science";
+        public const string CATEGORY = "Science";  // Normally written uppercase to annotate that its a 'const' = constant value
     }
 }

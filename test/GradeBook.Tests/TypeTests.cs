@@ -3,12 +3,43 @@ using Xunit;
 
 namespace GradeBook.Tests
 {
+
+    public delegate string WriteLogDelegate(string logMessage); //logMessage is just a name. Most importantly, it's the type 'string' which defines what it is.
+        // A delegate is a type that represents references to methods with a particular parameter list and return type.
+        // It is simply a reference to another object and a delegate method is a method of the delegate.
+        // A delegate method implements the callback mechanism which usually takes the sender as one of the parameter to be called.
+        // In short terms, this can clean up duplicated coding
+
     public class TypeTests
     {
+        int count = 0;
+
+        [Fact]
+        public void WriteLogDelegateCanPointToMethod()
+        {
+            WriteLogDelegate log = ReturnMessage;  // defining a variable 'log', and pointing it to different methods is a very flexible advantage of delegates.
+            log += ReturnMessage;
+            log += IncrementCount;
+
+            var result = log("HeLLo!");
+            Assert.Equal(3, count);
+        }
+
+        string IncrementCount(string message)
+        {
+            count++;
+            return message.ToLower();
+        }
+
+        string ReturnMessage(string message)  //'ReturnMessage' does NOT have to match with the deligate name 'WriteLogDelegate' !
+        {
+            count++;
+            return message;
+        }
+
         [Fact]
         public void ValueTypeAlsoPassByValue()
         // Looking at the 'public class TypeTests' = Whenever working with something defined as a 'class', we are working with a reference type.
-
         {
             var x = GetInt();
             SetInt(ref x);
@@ -46,8 +77,6 @@ namespace GradeBook.Tests
             // this line must be here, forced to 'initialize' the parameter because of the 'out' instruction (equal to 'ref').
         }
 
-
-
         [Fact]
         public void CSharpIsPassByValue()
         {
@@ -61,7 +90,6 @@ namespace GradeBook.Tests
         {
             book = new Book(name);
         }
-
 
         [Fact]
         public void CanSetNameFromReference()
@@ -96,7 +124,6 @@ namespace GradeBook.Tests
             // All of the String methods and C# operators that appear to modify a string actually return the results in a new string object.
 
             return parameter.ToUpper();
-
         }
 
         [Fact]
@@ -120,7 +147,6 @@ namespace GradeBook.Tests
             Assert.True(Object.ReferenceEquals(book1, book2));
         }
         
-
         Book GetBook(string name)
         {
             return new Book(name);
