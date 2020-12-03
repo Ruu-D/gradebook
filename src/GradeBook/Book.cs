@@ -1,13 +1,92 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GradeBook
 {
     public delegate void GradeAddedDelegate(object sender, EventArgs args);
 
-    public class Book
+    public class NamedObject  //Inheritance c# constructor
     {
-        public Book(string name)  // = this is a 'constructor'
+        public NamedObject(string name)
+        {
+            Name = name;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+}
+
+    public interface IBook     // 'IBook' with letter 'i' because it's an inferface, this is just a convention.
+    {
+        void AddGrade(double grade);
+        Statistics GetStatistics();
+        string Name { get; }
+        event GradeAddedDelegate GradeAdded;
+    }
+
+
+
+    public abstract class Book : NamedObject, IBook
+    {
+        public Book(string name) : base(name)
+        {
+        }
+
+        public abstract event GradeAddedDelegate GradeAdded;
+        public abstract void AddGrade(double grade);
+        public abstract Statistics GetStatistics();
+    }
+
+
+
+    public class DiskBook : Book
+    {
+        public DiskBook(string name) : base(name)
+        {
+        }
+
+        public override event GradeAddedDelegate GradeAdded;
+
+        public override void AddGrade(double grade)
+        {
+            using var writer = File.AppendText($"{Name}.txt");
+            {
+                writer.WriteLine(grade);
+                if(GradeAdded!=null)
+                {
+                    GradeAdded(this, new EventArgs());
+                }
+            }  // at this line, with the 'using' statement, the compiler will 'Dispose or Close' the file auotmatically.
+                
+        }
+
+        public override Statistics GetStatistics()
+        {
+            var result = new Statistics();
+
+            using var reader = File.OpenText($"{Name}.txt");
+            {
+                var line = reader.ReadLine();
+                while (line!=null)
+                {
+                    var number = double.Parse(line);
+                    result.Add(number);
+                    line = reader.ReadLine();
+                }
+            }
+
+            return result;
+        }
+    }
+
+
+    public class InMemoryBook : Book
+    {
+        public InMemoryBook(string name) : base(name)
         {
             grades = new List<double>();
             Name = name;
@@ -18,6 +97,9 @@ namespace GradeBook
         //    return "This is just to show that the 'AddGrade' name can exist multiple times, BUT with additional parameters!";
         //}
 
+
+
+        /*
         public void AddGrade(char letter)
         {
             ////////// Most basic form of the 'switch' statement.
@@ -40,8 +122,9 @@ namespace GradeBook
                     break;
             }
         }
+        */
 
-        public void AddGrade(double grade)
+        public override void AddGrade(double grade)
         {
             if (grade <= 100 && grade >= 0)
             {
@@ -59,16 +142,14 @@ namespace GradeBook
             }
         }
 
-        public event GradeAddedDelegate GradeAdded; //Gives some additional restrictions to the 'GradeAdded' delegate
+        public override event GradeAddedDelegate GradeAdded; //Gives some additional restrictions to the 'GradeAdded' delegate
 
-        public Statistics GetStatistics()
+        public override Statistics GetStatistics()
         {
             var result = new Statistics();
-            result.Average = 0.0;
-            result.High = double.MinValue;
-            result.Low = double.MaxValue;
 
-            #region LOOPING STATEMENTS
+
+#region LOOPING STATEMENTS
             /*
                         //////////////////////////////////
                         // Looping statement possibility 1
@@ -123,41 +204,18 @@ namespace GradeBook
             // Looping statement possibility 4
             //////////////////////////////////
             for (var index =0; index < grades.Count; index +=1)
-                        // (initialization ; condition for code below ; operation to perform after each loop)
                         {
-                            result.Low = Math.Min(grades[index], result.Low);
-                            result.High = Math.Max(grades[index], result.High);
-                            result.Average += grades[index];
+                result.Add(grades[index]);
                         }
-                        result.Average /= grades.Count;
-
-            switch(result.Average)
-                // This switch statement does 'pattern matching' which allows for type matches / comparisons.
-            {
-                case var d when d >= 90.0:
-                    result.Letter = 'A';
-                    break;
-                case var d when d >= 80.0:
-                    result.Letter = 'B';
-                    break;
-                case var d when d >= 70.0:
-                    result.Letter = 'C';
-                    break;
-                case var d when d >= 60.0:
-                    result.Letter = 'D';
-                    break;
-
-                default:
-                    result.Letter = 'F';
-                    break;
-            }
 
                         return result;
 
             #endregion
 
+#region JUMPING WITH BREAK AND CONTINUE
 /*
-            #region JUMPING WITH BREAK AND CONTINUE
+
+            // JUMPING WITH BREAK AND CONTINUE
             //////////////////////////////////
             // Jumping over lines of code
             //////////////////////////////////
@@ -183,43 +241,45 @@ namespace GradeBook
             return result;
             #endregion
 */
+#endregion
+
         }
 
         private List<double> grades;
 
+        //////////////////////////////////
+        ////// Long hand syntax for defining a property :
+        ////public string Name
+        ////{
+        ////    get
+        ////    {
+        ////        return name;    // Code being executed when someone wants to READ the Name property.
+        ////    }
+        ////    set
+        ////    {
+        ////        if (!String.IsNullOrEmpty(value))  // Perform a check if value is empty. ! means that 'if it's NOT' empty, set the field Name as the incoming input value.
+        ////        {
+        ////            name = value;
+        ////        }
+        ////        else
+        ////        {
+        ////            Console.WriteLine($"The input you gave me is empty bro");
+        ////        }
+        ////    }
+        ////}
+
+        ////private string name;  // = backing field that sits behind the property.
+
+
+
+
         ////////////////////////////////
-        //// Long hand syntax for defining a property :
+        //// short way for defining a property :
         //public string Name
         //{
-        //    get
-        //    {
-        //        return name;    // Code being executed when someone wants to READ the Name property.
-        //    }
-        //    set
-        //    {
-        //        if (!String.IsNullOrEmpty(value))  // Perform a check if value is empty. ! means that 'if it's NOT' empty, set the field Name as the incoming input value.
-        //        {
-        //            name = value;
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine($"The input you gave me is empty bro");
-        //        }
-        //    }
+        //    get;
+        //    set;  // makes sure that once a 'Name' is given to the book, it can no longer be changed afterwards.
         //}
-
-        //private string name;  // = backing field that sits behind the property.
-
-
-
-
-        //////////////////////////////
-        // short way for defining a property :
-        public string Name
-        {
-            get;
-            set;  // makes sure that once a 'Name' is given to the book, it can no longer be changed afterwards.
-        }
 
         // readonly string category = "Science";
         public const string CATEGORY = "Science";  // Normally written uppercase to annotate that its a 'const' = constant value
